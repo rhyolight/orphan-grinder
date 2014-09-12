@@ -1,0 +1,39 @@
+{
+  "name": "orphan-grinder",
+  "version": "0.0.1",
+  "description": "Finds orphaned GitHub Wiki pages.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rhyolight/orphan-grinder"
+  },
+  "keywords": [
+    "github",
+    "wiki",
+    "orphan",
+    "orphaned",
+    "scraper"
+  ],
+  "author": {
+    "name" : "Matthew Taylor",
+    "email" : "rhyolight@gmail.com",
+    "url" : "http://about.me/rhyolight"
+  },
+  "contributors": [{
+    "name": "Matt Taylor",
+    "email": "rhyolight@gmail.com"
+  }],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rhyolight/orphan-grinder/issues"
+  },
+  "homepage": "https://github.com/rhyolight/orphan-grinder",
+  "dependencies": {
+    "async": "^0.9.0",
+    "jsdom": "^1.0.0-pre.6",
+    "lodash": "^2.4.1"
+  }
+}
