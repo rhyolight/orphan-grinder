@@ -25,12 +25,11 @@ function filterWikiLinks(links, pageName) {
 }
 
 function scrape(url, selector, attr, callback) {
-    console.log('Loading page %s...', url);
+    // console.log('Loading page %s...', url);
     jsdom.env(url, ["http://code.jquery.com/jquery.js"], function (errors, window) {
         if (errors) {
             return callback(errors);
         }
-        console.log('Loaded %s.', url);
         var $ = window.$;
         var attrs = [];
         var $elements = $(selector);
@@ -63,7 +62,7 @@ function scrapeWikiLinks(url, callback) {
             return callback(err);
         }
         pageLinks = extractPageNames(filterWikiLinks(links, pageName));
-        console.log('%s links found in %s', pageLinks.length, url);
+        // console.log('%s links found in %s', pageLinks.length, url);
         callback(null, pageLinks);
     });
 }

@@ -3,29 +3,60 @@ var async = require('async')
   , url = process.argv[2]
   ;
 
-function report(linkTracks, badLinks, failedLoads) {
-    var orphaned = [];
+function report(linkTracks, badLinks) {
+    var orphaned = []
+      , orderedPages = []
+      ;
     _.each(linkTracks, function(links, page) {
         if (! links.length) {
             orphaned.push(page);
         }
+        orderedPages.push({name: page, links: links});
     });
-    console.log('Orphaned Pages:');
+    orderedPages = _.sortBy(orderedPages, function(op) {
+        return op.links.length;
+    }).reverse();
+
+    console.log('\n\n==============================================================');
+    console.log('Orphan Grinder Report for %s', url);
+    console.log('==============================================================');
+
+    console.log('\nMost Linked Pages:');
+    _.each(orderedPages.slice(0, 10), function(op) {
+        console.log('✪   %s/%s (%s links)', url, op.name, op.links.length);
+    });
+
+    console.log('\nAll Linked Pages:');
+    console.log('=================');
+    _.each(orderedPages, function(op) {
+        if (op.links.length) {
+            console.log('%s/%s is linked from:', url, op.name);
+            _.each(op.links, function(link) {
+                console.log('\t✪ %s/%s', url, link);
+            });
+        }
+    });
+
+    console.log('\nOrphaned Pages:');
+    console.log('===============');
     _.each(orphaned, function(orphan) {
-        console.log('\t%s/%s', url, orphan);
+        console.log('✪   %s/%s', url, orphan);
     });
+
     if (badLinks.length && badLinks.length) {
-        console.log("BAD LINKS:");
-        console.log(badLinks);
-    }
-    if (failedLoads && failedLoads.length) {
-        console.log("FAILED PAGE LOADS:");
-        console.log(failedLoads);
+        console.log('\nBAD LINKS:');
+        console.log('==========');
+        _.each(badLinks, function(badLink) {
+            console.log('✘   %s ==> %s', badLink[0], badLink[1]);
+        });
     }
 }
 
 function scrapeWiki(wikiUrl) {
-    console.log('** Starting scrape of %s **', wikiUrl);
+    console.log('***********************************************************');
+    console.log('** Starting scrape of %s', wikiUrl);
+    console.log('***********************************************************');
+    console.log('\nLooking up wiki page index...');
     scraper.getAllWikiPages(wikiUrl, function(err, pages) {
         var linkTracks = {}
           , badLinks = []
@@ -37,7 +68,9 @@ function scrapeWiki(wikiUrl) {
             return console.error(err);
         }
 
-        console.log('Found %s wiki pages.', pages.length);
+        // pages = pages.slice(0, 3);
+
+        console.log('Scraping %s wiki pages...', pages.length);
         
         _.each(pages, function(page) {
             linkTracks[page] = [];
@@ -50,15 +83,18 @@ function scrapeWiki(wikiUrl) {
                     if (err) {
                         failedLoads.push(pageName);
                     } else {
-                        if (! linkTracks[pageName]) {
-                            badLinks.push([pageName, page]);
-                        } else {
-                            linkTracks[pageName] = _.unique(linkTracks[pageName].concat(links));
-                        }
+                        _.each(links, function(link) {
+                            if (!linkTracks[link]) {
+                                badLinks.push([pageUrl, link]);
+                            } else {
+                                linkTracks[link].push(pageName);
+                            }
+                        });
+                        // linkTracks[pageName] = _.unique(linkTracks[pageName].concat(links));
                         processedPageCount++;
                         if (processedPageCount % 10 == 0) {
-                            console.log('%s pages processed, %s to go...', processedPageCount, (pages.length - processedPageCount));
-                            console.log('\t(%s failed page loads)', failedLoads.length);
+                            console.log('%s% done... %s pages processed, %s to go...', (Math.round((processedPageCount / pages.length) * 100)), processedPageCount, (pages.length - processedPageCount));
+                            console.log('\t(%s failed page loads, %s bad links)', failedLoads.length, badLinks.length);
                         }
                     }
                     callback();
@@ -93,7 +129,7 @@ function scrapeWiki(wikiUrl) {
                 console.error("ERROR");
                 console.error(err);
             } else {
-                report(linkTracks, badLinks, failedLoads);
+                report(linkTracks, badLinks);
             }
         });
 
