@@ -1,6 +1,7 @@
 var async = require('async')
   , scraper = require('./scraper')
   , url = process.argv[2]
+  , now = new Date()
   ;
 
 function report(linkTracks, badLinks) {
@@ -17,37 +18,38 @@ function report(linkTracks, badLinks) {
         return op.links.length;
     }).reverse();
 
-    console.log('\n\n==============================================================');
-    console.log('Orphan Grinder Report for %s', url);
-    console.log('==============================================================');
+    console.log('\n');
+    console.log('# Orphan Grinder Report');
+    console.log('### for %s on %s', url, now);
 
-    console.log('\nMost Linked Pages:');
-    _.each(orderedPages.slice(0, 10), function(op) {
-        console.log('✪   %s/%s (%s links)', url, op.name, op.links.length);
+    console.log('\n');
+    console.log('## Orphaned Pages:\n');
+    _.each(orphaned, function(orphan) {
+        console.log('- [%s](%s)', orphan, orphan);
     });
 
-    console.log('\nAll Linked Pages:');
-    console.log('=================');
+    console.log('\n');
+    console.log('## Most Linked Pages\n');
+    _.each(orderedPages.slice(0, 10), function(op) {
+        console.log('- [%s](%s) (%s links)', op.name, op.name, op.links.length);
+    });
+
+    console.log('\n');
+    console.log('## All Linked Pages:\n');
     _.each(orderedPages, function(op) {
         if (op.links.length) {
-            console.log('%s/%s is linked from:', url, op.name);
+            console.log('- [%s](%s) is linked from:', op.name, op.name);
             _.each(op.links, function(link) {
-                console.log('\t✪ %s/%s', url, link);
+                console.log('  - [%s](%s)', link, link);
             });
         }
     });
 
-    console.log('\nOrphaned Pages:');
-    console.log('===============');
-    _.each(orphaned, function(orphan) {
-        console.log('✪   %s/%s', url, orphan);
-    });
-
     if (badLinks.length && badLinks.length) {
-        console.log('\nBAD LINKS:');
-        console.log('==========');
+        console.log('\n');
+        console.log('## BAD LINKS:\n');
         _.each(badLinks, function(badLink) {
-            console.log('✘   %s ==> %s', badLink[0], badLink[1]);
+            console.log('- [%s](%s) ==> `%s`', badLink[0], badLink[0], badLink[1]);
         });
     }
 }
@@ -84,10 +86,12 @@ function scrapeWiki(wikiUrl) {
                         failedLoads.push(pageName);
                     } else {
                         _.each(links, function(link) {
-                            if (!linkTracks[link]) {
-                                badLinks.push([pageUrl, link]);
-                            } else {
-                                linkTracks[link].push(pageName);
+                            if (link) {
+                                if (!linkTracks[link]) {
+                                    badLinks.push([pageName, link]);
+                                } else {
+                                    linkTracks[link].push(pageName);
+                                }
                             }
                         });
                         // linkTracks[pageName] = _.unique(linkTracks[pageName].concat(links));

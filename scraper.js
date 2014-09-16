@@ -50,7 +50,10 @@ function extractPageNames(links) {
         if (name.indexOf('#')) {
             name = name.split('#').shift();
         }
-        return name.toLowerCase();
+        name = name.toLowerCase();
+        // Replace "%3a" with ":"
+        name = name.replace('%3a', ':');
+        return name;
     });
 }
 
@@ -69,10 +72,18 @@ function scrapeWikiLinks(url, callback) {
 
 function getAllWikiPages(wikiUrl, callback) {
     scrape(wikiUrl + '/_pages', '#wiki-content a', 'href', function(err, links) {
+        var pageNames, orphanPageIndex;
         if (err) {
             return callback(err);
         }
-        callback(null, extractPageNames(links));
+        pageNames = extractPageNames(links);
+        // If there is a wiki page called "orphans", we don't want to report the
+        // links on that page. It could be a list of orphaned pages.
+        orphanPageIndex = pageNames.indexOf('orphans');
+        if (orphanPageIndex > -1) {
+            pageNames.splice(orphanPageIndex, 1);
+        }
+        callback(null, pageNames);
     });
 }
 
