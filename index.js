@@ -49,22 +49,60 @@ function reverseLinks(linkTracks) {
     return reversed;
 }
 
-function getDistantLinks(linkTracks) {
-    var distant
-      , close = []
-      , linkedTo = reverseLinks(linkTracks)
-      , homeLinks = linkedTo['home']
+function getLinksFromPage(page, linkTracks) {
+    var reversedLinks = reverseLinks(linkTracks)
+      , links = reversedLinks[page]
+      , selfIndex;
+    // Page may not link to anything.
+    if (! links) {
+        links = [];
+    }
+    // Don't include linking to itself.
+    selfIndex = links.indexOf(page);
+    if (selfIndex > -1) {
+        links.splice(selfIndex, 1);
+    }
+    return links;
+}
+
+function getDistantLinks(linkTracks, orphans) {
+    var homeLinks = getLinksFromPage('home', linkTracks)
+      , allPageNames = _.keys(linkTracks)
+      , oneAway = []
+      , withinOne
+      , overOneAway
+      , twoAway = []
+      , withinTwo
+      , overTwoAway
       ;
-    // Add all the links on the home page to close links.
-    close = close.concat(homeLinks);
-    // Add all the links on each page the home page links to to close links.
+
+    // Going 1 level deep from /Home
     _.each(homeLinks, function(homeLink) {
-        close = close.concat(linkedTo[homeLink]);
+        var childLinks = getLinksFromPage(homeLink, linkTracks);
+        oneAway = oneAway.concat(childLinks);
+        // Going 2 levels deep from /Home
+        _.each(childLinks, function(childLink) {
+            var grandchildLinks = getLinksFromPage(childLink, linkTracks);
+            twoAway = twoAway.concat(grandchildLinks);
+        });
     });
-    close = _.unique(close);
-    // Get all the links that are not "close".
-    distant = _.difference(_.keys(linkTracks), close);
-    return distant;
+
+    withinOne = _.unique(homeLinks.concat(oneAway));
+    withinTwo = _.unique(homeLinks.concat(oneAway, twoAway));
+
+    overOneAway = _.difference(allPageNames, withinOne);
+    overTwoAway = _.difference(allPageNames, withinTwo)
+
+    // Strip out all the two-away pages from the one-away links
+    overOneAway = _.difference(overOneAway, overTwoAway);
+
+    // Strip out all the orphans from the over two away list
+    overTwoAway = _.difference(overTwoAway, orphans);
+
+    return {
+        'Two clicks from Home': overOneAway
+      , 'Over two clicks from Home': overTwoAway
+    };
 }
 
 function report(linkTracks, badLinks) {
@@ -92,17 +130,16 @@ function report(linkTracks, badLinks) {
         console.log('- [%s](%s)', orphan, orphan);
     });
 
-    distantLinks = getDistantLinks(linkTracks);
-    // Remove the true orphans from this list, they are reported above.
-    distantLinks = _.difference(distantLinks, orphaned);
-    console.log('\n');
-    console.log('## Distant Pages (%s):\n', distantLinks.length);
-    console.log('> These pages are more than two links from the [Home](home) page.\n');
-    _.each(distantLinks, function(distant) {
-        console.log('- [%s](%s)', distant, distant);
-    });
-
     if (all) {
+        distantLinks = getDistantLinks(linkTracks, orphaned);
+        _.each(distantLinks, function(distant, title) {
+            console.log('\n');
+            console.log('## %s (%s):\n', title, distant.length);
+            _.each(distant, function(distantLink) {
+                console.log('- [%s](%s)', distantLink, distantLink);
+            });
+        });
+
         console.log('\n');
         console.log('## Most Linked Pages\n');
         _.each(orderedPages.slice(0, 10), function(op) {
