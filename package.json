@@ -18,14 +18,16 @@
     "scraper"
   ],
   "author": {
-    "name" : "Matthew Taylor",
-    "email" : "rhyolight@gmail.com",
-    "url" : "http://about.me/rhyolight"
+    "name": "Matthew Taylor",
+    "email": "rhyolight@gmail.com",
+    "url": "http://about.me/rhyolight"
   },
-  "contributors": [{
-    "name": "Matt Taylor",
-    "email": "rhyolight@gmail.com"
-  }],
+  "contributors": [
+    {
+      "name": "Matt Taylor",
+      "email": "rhyolight@gmail.com"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rhyolight/orphan-grinder/issues"
@@ -34,6 +36,7 @@
   "dependencies": {
     "async": "^0.9.0",
     "jsdom": "^1.0.0-pre.6",
-    "lodash": "^2.4.1"
+    "lodash": "^2.4.1",
+    "minimist": "^1.1.0"
   }
 }

@@ -24,8 +24,10 @@ function filterWikiLinks(links, pageName) {
     });
 }
 
-function scrape(url, selector, attr, callback) {
-    // console.log('Loading page %s...', url);
+function scrape(url, selector, attr, verbose, callback) {
+    if (verbose) {
+        console.log('Loading page %s...', url);
+    }
     jsdom.env(url, ["http://code.jquery.com/jquery.js"], function (errors, window) {
         if (errors) {
             return callback(errors);
@@ -57,21 +59,23 @@ function extractPageNames(links) {
     });
 }
 
-function scrapeWikiLinks(url, callback) {
-    scrape(url, '#wiki-body .markdown-body a', 'href', function(err, links) {
+function scrapeWikiLinks(url, verbose, callback) {
+    scrape(url, '#wiki-body .markdown-body a', 'href', verbose, function(err, links) {
         var pageName = url.split('/').pop(),
             pageLinks;
         if (err) {
             return callback(err);
         }
         pageLinks = extractPageNames(filterWikiLinks(links, pageName));
-        // console.log('%s links found in %s', pageLinks.length, url);
+        if (verbose) {
+            console.log('%s links found in %s', pageLinks.length, url);
+        }
         callback(null, pageLinks);
     });
 }
 
-function getAllWikiPages(wikiUrl, callback) {
-    scrape(wikiUrl + '/_pages', '#wiki-content a', 'href', function(err, links) {
+function getAllWikiPages(wikiUrl, verbose, callback) {
+    scrape(wikiUrl + '/_pages', '#wiki-content a', 'href', verbose, function(err, links) {
         var pageNames, orphanPageIndex;
         if (err) {
             return callback(err);
