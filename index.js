@@ -1,4 +1,5 @@
 var async = require('async')
+  , _ = require('lodash')
   , scraper = require('./scraper')
   , argv = require('minimist')(process.argv.slice(2))
   , url
@@ -35,9 +36,41 @@ function processArgs(args) {
     debug = args.debug;
 }
 
+function reverseLinks(linkTracks) {
+    var reversed = {};
+    _.each(linkTracks, function(links, name) {
+        _.each(links, function(link) {
+            if (! reversed[link]) {
+                reversed[link] = [];
+            }
+            reversed[link].push(name);
+        });
+    });
+    return reversed;
+}
+
+function getDistantLinks(linkTracks) {
+    var distant
+      , close = []
+      , linkedTo = reverseLinks(linkTracks)
+      , homeLinks = linkedTo['home']
+      ;
+    // Add all the links on the home page to close links.
+    close = close.concat(homeLinks);
+    // Add all the links on each page the home page links to to close links.
+    _.each(homeLinks, function(homeLink) {
+        close = close.concat(linkedTo[homeLink]);
+    });
+    close = _.unique(close);
+    // Get all the links that are not "close".
+    distant = _.difference(_.keys(linkTracks), close);
+    return distant;
+}
+
 function report(linkTracks, badLinks) {
     var orphaned = []
       , orderedPages = []
+      , distantLinks
       ;
     _.each(linkTracks, function(links, page) {
         if (! links.length) {
@@ -57,6 +90,16 @@ function report(linkTracks, badLinks) {
     console.log('## Orphaned Pages (%s):\n', orphaned.length);
     _.each(orphaned, function(orphan) {
         console.log('- [%s](%s)', orphan, orphan);
+    });
+
+    distantLinks = getDistantLinks(linkTracks);
+    // Remove the true orphans from this list, they are reported above.
+    distantLinks = _.difference(distantLinks, orphaned);
+    console.log('\n');
+    console.log('## Distant Pages (%s):\n', distantLinks.length);
+    console.log('> These pages are more than two links from the [Home](home) page.\n');
+    _.each(distantLinks, function(distant) {
+        console.log('- [%s](%s)', distant, distant);
     });
 
     if (all) {
@@ -176,5 +219,3 @@ function scrapeWiki(wikiUrl) {
 
 processArgs(argv);
 scrapeWiki(url);
-
-

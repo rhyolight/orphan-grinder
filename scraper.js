@@ -1,6 +1,6 @@
 var jsdom = require('jsdom')
-    _ = require('lodash')
-    wikiLinkStartsWith = 'wiki/'
+  , _ = require('lodash')
+  , wikiLinkStartsWith = 'wiki/'
   ;
 
 function Scraper() {}
