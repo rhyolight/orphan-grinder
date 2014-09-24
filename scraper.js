@@ -15,7 +15,7 @@ function isIntraWikiLink(link) {
 }
 
 function isLinkToItself(link, pageName) {
-    return link.toLowerCase().indexOf(pageName) == 0;
+    return link.toLowerCase().split('/').shift() == pageName.toLowerCase();
 }
 
 function filterWikiLinks(links, pageName) {
