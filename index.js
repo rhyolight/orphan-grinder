@@ -127,7 +127,7 @@ function report(linkTracks, badLinks) {
     console.log('\n');
     console.log('## Orphaned Pages (%s):\n', orphaned.length);
     _.each(orphaned, function(orphan) {
-        console.log('- [%s](%s)', orphan, orphan);
+        console.log('- [%s](%s)', orphan, orphan.replace(':', '%3a'));
     });
 
     if (all) {
@@ -136,21 +136,21 @@ function report(linkTracks, badLinks) {
             console.log('\n');
             console.log('## %s (%s):\n', title, distant.length);
             _.each(distant, function(distantLink) {
-                console.log('- [%s](%s)', distantLink, distantLink);
+                console.log('- [%s](%s)', distantLink, distantLink.replace(':', '%3a'));
             });
         });
 
         console.log('\n');
         console.log('## Most Linked Pages\n');
         _.each(orderedPages.slice(0, 10), function(op) {
-            console.log('- [%s](%s) (%s links)', op.name, op.name, op.links.length);
+            console.log('- [%s](%s) (%s links)', op.name, op.name.replace(':', '%3a'), op.links.length);
         });
 
         console.log('\n');
         console.log('## All Linked Pages:\n');
         _.each(orderedPages, function(op) {
             if (op.links.length) {
-                console.log('- [%s](%s) is linked from:', op.name, op.name);
+                console.log('- [%s](%s) is linked from:', op.name, op.name.replace(':', '%3a'));
                 _.each(op.links, function(link) {
                     console.log('  - [%s](%s)', link, link);
                 });
@@ -162,7 +162,7 @@ function report(linkTracks, badLinks) {
         console.log('\n');
         console.log('## BAD LINKS (%s):\n', badLinks.length);
         _.each(badLinks, function(badLink) {
-            console.log('- [%s](%s) ==> `%s`', badLink[0], badLink[0], badLink[1]);
+            console.log('- [%s](%s) ==> `%s`', badLink[0], badLink[0].replace(':', '%3a'), badLink[1]);
         });
     }
 }
